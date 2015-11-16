@@ -1,7 +1,7 @@
-var addObj  = {
-  add: function(x,y){
-    return x + y;
+var addObj = {
+  add: function(x, y) {
+    return x + y
   }
-};
+}
 
-module.exports = addObj;
+module.exports = addObj

@@ -1,39 +1,49 @@
-var gulp = require('gulp'),
-  uglify = require('gulp-uglify'),
-  htmlreplace = require('gulp-html-replace'),
-  source = require('vinyl-source-stream'),
-  browserify = require('browserify'),
-  watchify = require('watchify'),
-  reactify = require('reactify'),
-  streamify = require('gulp-streamify'),
-  path;
+var gulp = require('gulp')
+var uglify = require('gulp-uglify')
+var htmlreplace = require('gulp-html-replace')
+var source = require('vinyl-source-stream')
+var browserify = require('browserify')
+var watchify = require('watchify')
+var reactify = require('reactify')
+var streamify = require('gulp-streamify')
+var livereload = require('gulp-livereload')
+var connect = require('gulp-connect')
 
-path = {
+var path = {
   HTML: 'src/index.html',
   MINIFIED_OUT: 'build.min.js',
   OUT: 'build.js',
   DEST: 'dist',
   DEST_BUILD: 'dist/build',
   DEST_SRC: 'dist/src',
-  ENTRY_POINT: './src/js/Math.js'
-};
+  ENTRY_POINT: './src/js/Math.jsx'
+}
 
-gulp.task('copy', function(){
+gulp.task('connect', function() {
+  connect.server({
+    root: path.DEST,
+    port: 9000,
+    livereload: true
+  })
+})
+
+gulp.task('copy', function() {
   gulp.src(path.HTML)
     .pipe(gulp.dest(path.DEST));
 });
 
 gulp.task('watch', function() {
+  var watcher;
   gulp.watch(path.HTML, ['copy']);
 
-  var watcher  = watchify(browserify({
+  watcher  = watchify(browserify({
     entries: [path.ENTRY_POINT],
     transform: [reactify],
     debug: true,
     cache: {}, packageCache: {}, fullPaths: true
   }));
 
-  return watcher.on('update', function () {
+  return watcher.on('update', function() {
     watcher.bundle()
       .pipe(source(path.OUT))
       .pipe(gulp.dest(path.DEST_SRC))
@@ -44,7 +54,7 @@ gulp.task('watch', function() {
     .pipe(gulp.dest(path.DEST_SRC));
 });
 
-gulp.task('build', function(){
+gulp.task('build', function() {
   browserify({
     entries: [path.ENTRY_POINT],
     transform: [reactify]
@@ -56,7 +66,7 @@ gulp.task('build', function(){
     .pipe(gulp.dest(path.DEST_BUILD));
 });
 
-gulp.task('replaceHTML', function(){
+gulp.task('replaceHTML', function() {
   gulp.src(path.HTML)
     .pipe(htmlreplace({
       'js': 'build/' + path.MINIFIED_OUT
@@ -65,4 +75,4 @@ gulp.task('replaceHTML', function(){
 });
 
 gulp.task('production', ['replaceHTML', 'build']);
-gulp.task('default', ['watch']);
+gulp.task('default', ['connect','watch']);
